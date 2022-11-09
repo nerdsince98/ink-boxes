@@ -16,7 +16,7 @@ const Home: NextPage = () => {
   const [addressSubmitted, setAddressSubmitted] = useState(false);
   const [value, setValue] = useState('');
 
-  const query = async (contract: ContractPromise, address: string) => {
+  const totalSupplyQuery = async (contract: ContractPromise, address: string) => {
     // (We perform the send from an account, here using Alice's address)
     const { gasRequired, result, output } = await contract.query.totalSupply(
       address,
@@ -45,9 +45,39 @@ const Home: NextPage = () => {
     }
   }
 
+  const balanceOfQuery = async (contract: ContractPromise, address: string) => {
+    // (We perform the send from an account, here using Alice's address)
+    const { gasRequired, result, output } = await contract.query.balanceOf(
+      address,
+      {
+        gasLimit,
+        storageDepositLimit,
+      },
+      address
+    );
+
+    // The actual result from RPC as `ContractExecResult`
+    console.log(result.toHuman());
+
+    // the gas consumed for contract execution
+    console.log(gasRequired.toHuman());
+
+    // check if the call was successful
+    if (result.isOk) {
+      // output the return value
+      console.log('Success', output?.toHuman());
+
+      if (output) {
+        setValue(output?.toString());
+      }
+    } else {
+      console.error('Error', result.asErr);
+    }
+  }
+
   const totalSupply = async () => {
     const provider = new WsProvider(WS_PROVIDER);
-		const api = new ApiPromise({ provider });
+    const api = new ApiPromise({ provider });
 
     await api.isReady;
 
@@ -74,7 +104,43 @@ const Home: NextPage = () => {
         }
       });
 
-    await query(contract, alice.address);
+    await totalSupplyQuery(contract, alice.address);
+  }
+
+  const balanceOf = async () => {
+    const provider = new WsProvider(WS_PROVIDER);
+    const api = new ApiPromise({ provider });
+
+    await api.isReady;
+
+    const keyring = new Keyring({ type: 'sr25519' });
+
+    const alice = keyring.addFromUri('//Alice', { name: 'Alice default' });
+
+    console.log('API is ready');
+
+    const abi = new Abi(abiData, api.registry.getChainProperties());
+
+    const contract = new ContractPromise(api, abi, address);
+
+    const inputAddress = document.getElementById('balanceOf')?.value || '';
+
+    console.log(inputAddress);
+
+    // Send the transaction, like elsewhere this is a normal extrinsic
+    // with the same rules as applied in the API (As with the read example,
+    // additional params, if required can follow)
+    await contract.tx
+      .balanceOf({ storageDepositLimit, gasLimit }, inputAddress)
+      .signAndSend(alice, async (res) => {
+        if (res.status.isInBlock) {
+          console.log('in a block');
+        } else if (res.status.isFinalized) {
+          console.log('finalized');
+        }
+      });
+
+      await balanceOfQuery(contract, inputAddress);
   }
 
 
@@ -95,23 +161,31 @@ const Home: NextPage = () => {
           <button onClick={totalSupply}>total supply</button>
 
           <h4>{value}</h4>
+
+          <button onClick={balanceOf}>Balance Of</button>
+
+          <input id='balanceOf' placeholder='enter address here'></input>
+
+          <h4 id='balanceOfValue'></h4>
         </> :
-        <>
-          <h3 className={styles.title}>
-            Provide Contract Address
-          </h3>
-          <div className={styles.address}>
-            <input
-              type="text"
-              value={address}
-              onChange={e => setAddress(e.target.value)}
-            />
-            <button onClick={e => setAddressSubmitted(true)}>Set</button>
-          </div>
-        </>}
+          <>
+            <h3 className={styles.title}>
+              Provide Contract Address
+            </h3>
+            <div className={styles.address}>
+              <input
+                type="text"
+                value={address}
+                onChange={e => setAddress(e.target.value)}
+              />
+              <button onClick={e => setAddressSubmitted(true)}>Set</button>
+            </div>
+          </>}
       </main>
     </div>
   )
 }
 
 export default Home
+
+// 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
