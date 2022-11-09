@@ -8,7 +8,7 @@ import styles from '../styles/Home.module.css'
 import abiData from '../abi/flipper-contract-abi'
 
 const WS_PROVIDER = 'ws://127.0.0.1:9944'
-const gasLimit = 18750000000;
+const gasLimit = 1000000000001;
 const storageDepositLimit = null;
 
 const Home: NextPage = () => {
