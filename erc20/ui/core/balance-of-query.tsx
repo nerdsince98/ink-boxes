@@ -1,9 +1,8 @@
-import { useState } from 'react';
 import { ContractPromise } from '@polkadot/api-contract'
 
 const gasLimit = 1000000000001;
 const storageDepositLimit = null;
-const [value, setValue] = useState('');
+// const [value, setValue] = useState('');
 
 const balanceOfQuery = async (contract: ContractPromise, address: string) => {
     // (We perform the send from an account, here using Alice's address)
@@ -28,7 +27,9 @@ const balanceOfQuery = async (contract: ContractPromise, address: string) => {
       console.log('Success', output?.toHuman());
 
       if (output) {
-        setValue(output?.toString());
+        // setValue(output?.toString());
+        console.log(output?.toString());
+        (document.getElementById('output') as HTMLInputElement).innerText = output?.toString();
       }
     } else {
       console.error('Error', result.asErr);

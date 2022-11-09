@@ -3,14 +3,16 @@ import { ContractPromise } from '@polkadot/api-contract'
 const gasLimit = 1000000000001;
 const storageDepositLimit = null;
 
-const totalSupplyQuery = async (contract: ContractPromise, address: string) => {
+const approveQuery = async (contract: ContractPromise, address: string, amount: Number) => {
     // (We perform the send from an account, here using Alice's address)
-    const { gasRequired, result, output } = await contract.query.totalSupply(
+    const { gasRequired, result, output } = await contract.query.approve(
       address,
       {
         gasLimit,
         storageDepositLimit,
-      }
+      },
+      address,
+      amount
     );
 
     // The actual result from RPC as `ContractExecResult`
@@ -32,4 +34,4 @@ const totalSupplyQuery = async (contract: ContractPromise, address: string) => {
     }
   }
 
-export default totalSupplyQuery;
+export default approveQuery;
