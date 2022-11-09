@@ -9,6 +9,7 @@ import abiData from '../abi/erc20-contract-abi'
 import totalSupplyQuery from '../core/total-supply-query';
 import balanceOfQuery from '../core/balance-of-query';
 import approveQuery from '../core/approve-query';
+import transferQuery from '../core/transfer-query';
 
 const WS_PROVIDER = 'ws://127.0.0.1:9944'
 const gasLimit = 1000000000001;
@@ -102,7 +103,7 @@ const Home: NextPage = () => {
 
     const approveAddress = (document.getElementById('approveAddress') as HTMLInputElement).value;
 
-    const approveAmount = (document.getElementById('approveAmount') as HTMLInputElement).value;
+    const approveAmount = parseInt((document.getElementById('approveAmount') as HTMLInputElement).value);
 
     // Send the transaction, like elsewhere this is a normal extrinsic
     // with the same rules as applied in the API (As with the read example,
@@ -120,7 +121,41 @@ const Home: NextPage = () => {
     await approveQuery(contract, approveAddress, approveAmount);
   }
 
-  const transfer = async () => {}
+  const transfer = async () => {
+    const provider = new WsProvider(WS_PROVIDER);
+    const api = new ApiPromise({ provider });
+
+    await api.isReady;
+
+    const keyring = new Keyring({ type: 'sr25519' });
+
+    const alice = keyring.addFromUri('//Alice', { name: 'Alice default' });
+
+    console.log('API is ready');
+
+    const abi = new Abi(abiData, api.registry.getChainProperties());
+
+    const contract = new ContractPromise(api, abi, address);
+
+    const transferAddress = (document.getElementById('transferAddress') as HTMLInputElement).value;
+
+    const transferAmount = parseInt((document.getElementById('transferAmount') as HTMLInputElement).value);
+
+    // Send the transaction, like elsewhere this is a normal extrinsic
+    // with the same rules as applied in the API (As with the read example,
+    // additional params, if required can follow)
+    await contract.tx
+      .transfer({ storageDepositLimit, gasLimit, }, transferAddress, transferAmount)
+      .signAndSend(alice, async (res) => {
+        if (res.status.isInBlock) {
+          console.log('in a block');
+        } else if (res.status.isFinalized) {
+          console.log('finalized');
+        }
+      });
+
+    await transferQuery(contract, transferAddress, transferAmount);
+  }
 
 
   return (
@@ -148,6 +183,12 @@ const Home: NextPage = () => {
           <input id='approveAddress' placeholder='enter address here'></input>
 
           <input id='approveAmount' placeholder='enter amount here'></input>
+
+          <button onClick={transfer}>Transfer</button>
+
+          <input id='transferAddress' placeholder='enter address here'></input>
+
+          <input id='transferAmount' placeholder='enter amount here'></input>
 
           <h4 id='output'></h4>
         </> :
