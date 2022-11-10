@@ -92,7 +92,7 @@ const Home: NextPage = () => {
             Flipper Contract
           </h3>
 
-          <button onClick={flip}>Flip</button>
+          <button id='flip' onClick={flip}>Flip</button>
 
           <h4>{value}</h4>
         </> :
