@@ -6,8 +6,8 @@ This repo contains flipper contract code along with it's UI.
 
 ### Deploy flipper contract
 0. Run the command `substrate-contracts-node --dev` to start substrate contracts node.
-1. Go to `flipper` directory and run `cargo +nightly test` to ensure all the tests are running fine.
-2. Run `cargo +nightly contracts build` to build the smart contract.
+1. Go to `flipper` directory and run `cargo-contract contract test` to ensure all the tests are running fine.
+2. Run `cargo-contract contract build` to build the smart contract.
 3. To deploy contract, goto: `https://contracts-ui.substrate.io/`. On the left side, click on `Add new contract`.
 4. After deploying the contract, Run the UI.
 
@@ -19,6 +19,10 @@ Go to ui folder
 Install Dependencies
 
 - `npm i`
+
+Run the tests
+
+ - `npm test`
 
 Start next.js server
 
